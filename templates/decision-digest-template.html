@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>20260309-D01-PebbleNotes-Beta-Launch</title>
+<meta name="digest-id" content="20260309-D01-PebbleNotes-Beta-Launch">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+/* Decision digest template. One file, no outside fonts, scripts or links.
+   Replace the invented Pebble Notes content; keep the structure, classes, data attributes and script. */
+:root { --bg:#f4f6f7; --surface:#ffffff; --ink:#18252b; --muted:#4a5c65; --line:#c9d3d8; --edge:#6a7d86;
+  --accent:#0b5f5f; --on-accent:#ffffff; --accent-soft:#dff0ef; --ask:#8a3b00; --ask-soft:#fbeadb;
+  --bar:#0b5f5f; --on-bar:#ffffff; color-scheme:light; }
+:root[data-theme="dark"] { --bg:#12191d; --surface:#1a2429; --ink:#e6edf0; --muted:#a6b5bc; --line:#33434b; --edge:#8195a0;
+  --accent:#62d0cd; --on-accent:#0b1114; --accent-soft:#17393a; --ask:#f0a45f; --ask-soft:#3a2a1a;
+  --bar:#0e2f30; --on-bar:#e6edf0; color-scheme:dark; }
+:root[data-motion="reduce"] * { transition:none !important; animation:none !important; scroll-behavior:auto !important; }
+* { box-sizing:border-box; }
+html { scroll-padding-top:64px; background:var(--bg); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size:16px; line-height:1.5; }
+.bar { position:sticky; top:0; z-index:10; background:var(--bar); color:var(--on-bar); }
+.bar-in { max-width:780px; margin:0 auto; padding:8px 16px; min-height:48px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 12px; }
+.bar-name { margin:0; font-weight:700; font-size:1.05rem; }
+.bar-date { font-size:0.95rem; }
+.page { max-width:780px; margin:0 auto; padding:24px 16px 56px; }
+h1 { font-size:1.7rem; line-height:1.2; margin:0 0 8px; overflow-wrap:anywhere; }
+h2 { font-size:1.25rem; line-height:1.3; margin:36px 0 10px; overflow-wrap:anywhere; }
+h3 { font-size:1.05rem; margin:14px 0 6px; }
+p { margin:0 0 10px; overflow-wrap:anywhere; }
+.sub { color:var(--muted); }
+small, .small { font-size:0.9rem; }
+a { color:var(--accent); }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.badge { display:inline-flex; align-items:center; gap:6px; border:2px solid var(--edge); border-radius:99px; padding:2px 12px; font-size:0.9rem; font-weight:600; background:var(--surface); color:var(--ink); }
+.badge[data-state="reserved"] { border-color:var(--ask); color:var(--ask); }
+.badge[data-state="answered"] { border-color:var(--accent); color:var(--accent); }
+.badge[data-state="later"] { border-style:dashed; }
+.box { background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:14px 16px; }
+.readfirst { background:var(--accent-soft); border:2px solid var(--accent); border-radius:6px; padding:12px 16px; }
+.readfirst h2 { margin:0 0 6px; font-size:1.1rem; }
+.readfirst ul { margin:0; padding-left:20px; }
+.readfirst li { margin:4px 0; }
+.counts { display:flex; flex-wrap:wrap; gap:8px; list-style:none; margin:16px 0 0; padding:0; }
+.counts li { flex:1 1 120px; background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:8px 12px; display:flex; flex-direction:column; min-height:44px; }
+.counts b { font-size:1.5rem; line-height:1.1; }
+.counts span { color:var(--muted); font-size:0.9rem; }
+.status-line { color:var(--muted); font-size:0.9rem; margin:8px 0 0; min-height:1.4em; }
+pre { margin:8px 0; padding:10px 12px; background:var(--bg); border:1px solid var(--edge); border-radius:4px; font-family:ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size:0.9rem; white-space:pre-wrap; overflow-wrap:anywhere; max-width:100%; }
+button { font:inherit; font-size:1rem; min-height:44px; min-width:44px; padding:8px 16px; background:var(--accent); color:var(--on-accent); border:2px solid var(--accent); border-radius:6px; cursor:pointer; }
+button.quiet { background:var(--surface); color:var(--accent); }
+.btnrow { display:flex; flex-wrap:wrap; gap:8px 12px; margin:10px 0; }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:14px 16px; margin:0 0 18px; }
+.card-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 12px; margin:0 0 8px; }
+.card-head h2 { margin:0; font-size:1.1rem; }
+.facts p { margin:0 0 8px; }
+.opt { display:flex; align-items:flex-start; gap:10px; min-height:44px; padding:8px 10px; margin:0 0 6px; border:1px solid var(--edge); border-radius:6px; background:var(--bg); cursor:pointer; }
+.opt input { flex:none; width:24px; height:24px; margin:2px 0 0; accent-color:var(--accent); }
+.opt span { min-width:0; overflow-wrap:anywhere; }
+.rec { display:inline-block; font-size:0.8rem; font-weight:700; border:1px solid var(--accent); color:var(--accent); background:var(--surface); border-radius:3px; padding:0 6px; margin-left:4px; }
+fieldset { border:1px solid var(--line); border-radius:6px; margin:12px 0 0; padding:8px 10px 10px; min-width:0; }
+legend { font-weight:700; padding:0 6px; max-width:100%; overflow-wrap:anywhere; }
+label.qtitle { display:block; font-weight:700; margin:10px 0 6px; }
+.silent { border-left:4px solid var(--ask); background:var(--ask-soft); color:var(--ink); padding:8px 12px; border-radius:0 4px 4px 0; margin:10px 0 0; }
+.against { border-left:4px solid var(--edge); padding:2px 0 2px 12px; margin:10px 0; }
+.docbar { display:flex; flex-wrap:wrap; gap:4px 10px; align-items:center; min-height:44px; padding:6px 0; }
+.flag { font-weight:700; color:var(--ask); }
+blockquote.doc { margin:4px 0 10px; padding:8px 12px; border-left:4px solid var(--accent); background:var(--bg); font-size:0.95rem; overflow-wrap:anywhere; }
+textarea { display:block; width:100%; min-height:5rem; font:inherit; font-size:16px; color:var(--ink); background:var(--surface); border:1px solid var(--edge); border-radius:4px; padding:8px 10px; resize:vertical; }
+.notes { margin-top:14px; padding-top:10px; border-top:1px dashed var(--edge); }
+.notes label { display:block; font-size:0.9rem; color:var(--muted); margin-bottom:6px; }
+details { margin:8px 0; }
+summary { min-height:44px; display:flex; align-items:center; cursor:pointer; font-weight:600; color:var(--accent); }
+.stop { margin:32px 0 0; padding:12px 14px; border:2px dashed var(--accent); border-radius:6px; text-align:center; }
+.stop b { display:block; font-size:1.1rem; color:var(--accent); }
+.tablewrap { border:1px solid var(--line); border-radius:6px; background:var(--surface); }
+table { border-collapse:collapse; width:100%; table-layout:fixed; font-size:0.9rem; }
+th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
+th { font-size:0.8rem; color:var(--muted); }
+tr:last-child td { border-bottom:0; }
+.undo { display:flex; align-items:center; gap:8px; min-height:44px; margin-top:4px; }
+.undo input { width:24px; height:24px; accent-color:var(--accent); }
+ul.plain { margin:0; padding-left:22px; }
+ul.plain li { margin:8px 0; }
+.judgment { border-left:4px solid var(--accent); padding:4px 0 4px 12px; margin:16px 0; }
+#fallback { margin-top:10px; }
+#fallback label { display:block; font-weight:600; margin-bottom:6px; }
+[hidden] { display:none !important; }
+</style>
+<script>
+/* Theme: follow the system setting, both palettes are defined in the style block. */
+(function () {
+  try {
+    var dark = window.matchMedia('(prefers-color-scheme: dark)');
+    var setTheme = function () { document.documentElement.setAttribute('data-theme', dark.matches ? 'dark' : 'light'); };
+    setTheme();
+    if (dark.addEventListener) { dark.addEventListener('change', setTheme); } else if (dark.addListener) { dark.addListener(setTheme); }
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { document.documentElement.setAttribute('data-motion', 'reduce'); }
+  } catch (e) { /* light palette stays */ }
+})();
+</script>
+</head>
+<body>
+<header class="bar"><div class="bar-in"><p class="bar-name">Pebble Notes</p><span class="bar-date">Decision digest, 2026-03-09</span></div></header>
+<main class="page" id="top">
+<noscript><p class="box">Saving and copying need scripts, and scripts are off. You can still read everything here.</p></noscript>
+<h1>3 decisions, 1 reserved</h1>
+<p><span class="badge" data-state="waiting"><span aria-hidden="true">&#x25CF;</span><span>Waiting on you</span></span></p>
+<p class="sub">20260309-D01-PebbleNotes-Beta-Launch. Published 2026-03-09. Example content: every name, number and date here is invented.</p>
+
+<div class="readfirst" id="read-first">
+<h2>Read this first</h2>
+<ul>
+<li>This is the weekly decision digest for Pebble Notes, a note taking app in private beta. It holds 3 decisions.</li>
+<li>Open: 3 decisions, 1 of them reserved. 1 document to review. About 6 minutes.</li>
+<li>Most important: question 1, because the beta opens on 2026-03-16 and the checklist must ship before then.</li>
+<li>Nothing is sent from this page. Your answers save in this browser. Press I have answered at the bottom when you are done.</li>
+</ul>
+</div>
+
+<ul class="counts" role="list" aria-label="Counts">
+<li data-count="open" data-n="3"><b>3</b><span>Open decisions</span></li>
+<li data-count="reserved" data-n="1"><b>1</b><span>Reserved, no default</span></li>
+<li data-count="dated" data-n="2"><b>2</b><span>With a date</span></li>
+<li data-count="oldest" data-n="0"><b>0</b><span>Days, oldest ask</span></li>
+</ul>
+<p class="status-line" id="save-line" role="status">Drafts are saved in this browser on this device. A private window may not keep them.</p>
+<p class="status-line" id="progress">Answered 0 of 3. Choosing I need more information or Later does not count as answered.</p>
+
+<h2>Quick win, under 5 minutes</h2>
+<div class="box">
+<p>Ask two testers to try the checklist prototype before you decide question 1. Copy this message and send it yourself.</p>
+<pre id="qw-text">Please try the new onboarding checklist and tell me the first place you got stuck.</pre>
+<div class="btnrow"><button type="button" class="quiet" data-copy="qw-text">Copy this message</button></div>
+<p class="status-line" id="qw-status" role="status"></p>
+</div>
+
+<h2>The decisions</h2>
+
+<section class="card" data-item="q1" data-num="1" data-kind="radio" data-reserved="0" data-date="2026-03-11" data-needs-doc="1">
+<div class="card-head"><h2>Question 1 of 3</h2><span class="badge" data-state="dated"><span class="sym" aria-hidden="true">&#x25F7;</span><span class="word">Has a date</span></span></div>
+<div class="facts">
+<p><b>What this is.</b> This is about whether the first launch screen shows a short guide to new testers now, or waits for a pricing change. The onboarding checklist is a card with 5 tasks that walks a new user through creating a first note. You are asked now because the beta opens on 2026-03-16 and the build is cut on 2026-03-12.</p>
+<p><b>Terms.</b> Free tier: the plan with no payment, today capped at 100 notes. Pricing change: a plan to cap the free tier at 50 notes, which may move the upgrade screen.</p>
+<p><b>Where it came from.</b> The support lead raised it on 2026-03-02. Your note of 2026-02-20 said to keep the beta small and simple.</p>
+<p><b>Recommended by the product lead:</b> ship this week, because testers who get guidance on day one report fewer setup problems.</p>
+<p><b>What changes in practice.</b> If you ship, new testers see the 5 task card on first launch. If you hold, they see an empty note list and the support lead answers the same setup questions by hand.</p>
+</div>
+<div class="against"><b>Strongest reason against the recommendation:</b> if the pricing change moves the upgrade screen, the checklist ships with an out of date step and gets rewritten in week 2.</div>
+<div class="docbar"><span class="flag"><span aria-hidden="true">&#x25C6;</span> Review needed</span><span>Document 1 of 1: pricing change note, about 90 words, under 1 minute.</span></div>
+<blockquote class="doc">Pricing change note (invented). The free tier drops from 100 notes to 50. The upgrade screen moves from the settings page to the note list footer. The change is planned for the first week of April. The onboarding checklist has one step, "Create your tenth note", that mentions the old limit. No other step touches pricing.</blockquote>
+<fieldset data-kind="radio">
+<legend class="qtitle">Ship the onboarding checklist this week or hold it for the pricing change?</legend>
+<label class="opt"><input type="radio" name="q1" id="q1-ship" value="ship" data-label="Ship this week" data-rec="1"><span>Ship this week <span class="rec">Recommended</span><br><small>Testers get the guide from day one. One step may need a rewrite in April.</small></span></label>
+<label class="opt"><input type="radio" name="q1" id="q1-hold" value="hold" data-label="Hold for the pricing change"><span>Hold for the pricing change<br><small>No rewrite later. Testers start without a guide and the support lead covers setup by hand.</small></span></label>
+<label class="opt"><input type="radio" name="q1" id="q1-more" value="more" data-label="I need more information"><span>I need more information<br><small>Returns to the next digest with new facts first. Does not count as answered.</small></span></label>
+<label class="opt"><input type="radio" name="q1" id="q1-later" value="later" data-label="Later"><span>Later<br><small>Returns to the next digest unchanged. Does not count as answered.</small></span></label>
+</fieldset>
+<p class="silent"><b>If you stay silent:</b> the checklist ships on 2026-03-11. <b>Default date:</b> 2026-03-11.</p>
+<div class="notes"><label for="q1-notes">Optional notes for question 1, onboarding checklist (not a question)</label><textarea id="q1-notes" data-notes="q1" rows="3"></textarea></div>
+</section>
+
+<section class="card" data-item="q2" data-num="2" data-kind="check" data-reserved="0" data-date="2026-03-12" data-needs-doc="0">
+<div class="card-head"><h2>Question 2 of 3</h2><span class="badge" data-state="dated"><span class="sym" aria-hidden="true">&#x25F7;</span><span class="word">Has a date</span></span></div>
+<div class="facts">
+<p><b>What this is.</b> This is about which of three candidate questions go into the one page survey sent to beta testers after their first week. You are asked now because the survey tool needs its final list by 2026-03-12.</p>
+<p><b>Terms.</b> Completion rate: the share of testers who finish the survey once they open it.</p>
+<p><b>Where it came from.</b> The product lead drafted all three on 2026-03-05. No earlier decision covers the survey.</p>
+<p><b>Suggested by the product lead:</b> the first two. They are quick to answer and tell the team what to fix first.</p>
+<p><b>What changes in practice.</b> Each added question makes the survey longer, and a longer survey tends to get fewer finished replies. Ticking all three gives more detail and a lower completion rate.</p>
+</div>
+<div class="against"><b>Strongest reason against the suggestion:</b> leaving out the pricing question means the team learns nothing about willingness to pay before the April change.</div>
+<fieldset data-kind="check">
+<legend class="qtitle">Which of these three survey questions go in the beta survey?</legend>
+<div class="btnrow">
+<button type="button" class="quiet" data-tick="all" data-target="q2">Tick all</button>
+<button type="button" class="quiet" data-tick="none" data-target="q2">Untick all</button>
+</div>
+<p class="status-line" id="q2-status" role="status" aria-live="polite"></p>
+<label class="opt"><input type="checkbox" id="q2-a" value="setup" data-label="How long did setup take?"><span>How long did setup take? <span class="rec">Suggested</span><br><small>One number answer. Shows where the first launch drags.</small></span></label>
+<label class="opt"><input type="checkbox" id="q2-b" value="expect" data-label="What did you expect to find on the first screen?"><span>What did you expect to find on the first screen? <span class="rec">Suggested</span><br><small>Short text answer. Shows what the first screen fails to say.</small></span></label>
+<label class="opt"><input type="checkbox" id="q2-c" value="pay" data-label="Would you pay for sync across devices?"><span>Would you pay for sync across devices?<br><small>Yes or no. Early signal on pricing, but answers from free testers are weak evidence.</small></span></label>
+</fieldset>
+<p class="silent"><b>If you stay silent:</b> questions 1 and 2 go in the survey on 2026-03-12. <b>Default date:</b> 2026-03-12.</p>
+<div class="notes"><label for="q2-notes">Optional notes for question 2, beta survey questions (not a question)</label><textarea id="q2-notes" data-notes="q2" rows="3"></textarea></div>
+</section>
+
+<section class="card" data-item="q3" data-num="3" data-kind="text" data-reserved="1" data-date="" data-needs-doc="0">
+<div class="card-head"><h2>Question 3 of 3</h2><span class="badge" data-state="reserved"><span class="sym" aria-hidden="true">&#x1F512;</span><span class="word">Reserved</span></span></div>
+<div class="facts">
+<p><b>What this is.</b> This is about how much money the team may spend on paid survey respondents. It is reserved because it is spending. You are asked now because the survey panel provider needs a cap before it opens an account.</p>
+<p><b>Terms.</b> Budget cap: the most the team may spend in total on respondents. Panel provider: a company that finds paid survey takers for a fee per completed answer.</p>
+<p><b>Where it came from.</b> The product lead raised it on 2026-03-06. You have not set a survey budget before.</p>
+<p><b>What changes in practice.</b> With a cap, the team can order paid respondents for the beta. With none, the survey goes only to the 40 testers already on the list.</p>
+</div>
+<div class="against"><b>Strongest reason against spending at all:</b> the 40 listed testers answer for free, and paid respondents are not the people who will use the app.</div>
+<p class="silent"><b>Reserved: no default.</b> Nothing happens until you answer.</p>
+<label class="qtitle" for="q3-text">What should the paid survey budget cap be?</label>
+<textarea id="q3-text" data-answer="q3" rows="3"></textarea>
+</section>
+
+<div class="stop" id="stop-here"><b>You can stop reading here</b>Everything below is background. If you stop, the defaults above run on their dates and question 3 waits.</div>
+
+<h2>Since last time</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>You said</th><th>What was done</th><th>When</th></tr></thead>
+<tbody>
+<tr><td>Keep the beta small</td><td>Invite list held at 40 testers</td><td>2026-02-21</td></tr>
+<tr><td>Yes to a weekly digest</td><td>This page is the first</td><td>2026-02-27</td></tr>
+<tr><td>No answer on icon colors</td><td>Default taken, listed below</td><td>2026-03-06</td></tr>
+</tbody></table></div>
+
+<h2>Decided by default</h2>
+<p class="sub">Not reserved, and undoable in one session. Tick a row to ask for the undo.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>What</th><th>Answer taken</th><th>Undo</th></tr></thead>
+<tbody>
+<tr><td>App icon color for the beta</td><td>Keep the blue icon</td><td>Say "switch to the green icon" and it changes back.<label class="undo"><input type="checkbox" id="undo-icon" data-undo="icon" data-label="App icon color for the beta"><span>Ask to undo</span></label></td></tr>
+<tr><td>Send the digest on Mondays</td><td>Mondays at 9 in the morning</td><td>Say "move the digest day" and it moves.<label class="undo"><input type="checkbox" id="undo-day" data-undo="day" data-label="Send the digest on Mondays"><span>Ask to undo</span></label></td></tr>
+</tbody></table></div>
+
+<h2>What this did not do or verify</h2>
+<ul class="plain" id="not-done">
+<li>The effect of the pricing change on the checklist screens was not checked: the design file was not opened.</li>
+<li>No tester has used the checklist yet, so nothing says it reduces setup problems.</li>
+<li>The survey length effect on completion is a general expectation, not a measurement for this app.</li>
+<li>Documents: 1 referenced, 1 pasted, 0 panels, 0 held back.</li>
+</ul>
+<p class="judgment">Question 1 is the only decision with a hard deadline; answer it first.</p>
+
+<div class="notes"><label for="general-notes">General notes, optional (no question is asked here)</label><textarea id="general-notes" rows="3"></textarea></div>
+
+<div class="btnrow">
+<button type="button" id="btn-submit" aria-describedby="action-status">I have answered</button>
+<button type="button" id="btn-export" class="quiet" aria-describedby="action-status">Export my answers</button>
+</div>
+<p class="status-line" id="action-status" role="status"></p>
+<div id="fallback" hidden>
+<label for="fallback-box">Copy was blocked here. The text is selected below: press Ctrl or Cmd+C.</label>
+<textarea id="fallback-box" readonly rows="8"></textarea>
+</div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  function qs(s, r) { return (r || document).querySelector(s); }
+  function qsa(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function obj(x) { return (x && typeof x === 'object' && !Array.isArray(x)) ? x : {}; }
+  function str(x) { return typeof x === 'string' ? x : ''; }
+
+  var metaEl = qs('meta[name="digest-id"]');
+  var DIGEST = metaEl ? metaEl.getAttribute('content') : document.title;
+  var KEY = 'digest:' + DIGEST;
+  var MESSAGE = 'I have updated my notes in digest ' + DIGEST + '. Please read the comments saved on that page, review my answers, and carry on.';
+  var STATES = {
+    waiting: ['●', 'Waiting on you'],
+    answered: ['✓', 'Answered'],
+    reserved: ['🔒', 'Reserved'],
+    dated: ['◷', 'Has a date'],
+    later: ['‖', 'Later']
+  };
+  var saveLine = qs('#save-line'), progress = qs('#progress'), actionStatus = qs('#action-status');
+  var fb = qs('#fallback'), fbBox = qs('#fallback-box');
+  var state = { v: 1, radios: {}, checks: {}, texts: {}, notes: {}, undo: {}, general: '', savedAt: '', submittedAt: '' };
+
+  /* HOOK: a host that can store answers defines window.saveRemote(doc) before this script runs.
+     When it is not defined, nothing happens and answers stay in this browser. */
+  function saveRemote(doc) {
+    try { if (typeof window.saveRemote === 'function') { window.saveRemote(doc); } } catch (e) { /* ignored */ }
+  }
+
+  function clock() {
+    try { return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (e) { return 'now'; }
+  }
+
+  function collect() {
+    qsa('[data-item]').forEach(function (card) {
+      var key = card.getAttribute('data-item'), kind = card.getAttribute('data-kind');
+      if (kind === 'radio') {
+        var r = qs('input[type="radio"]:checked', card);
+        state.radios[key] = r ? r.value : '';
+      } else if (kind === 'check') {
+        state.checks[key] = qsa('input[type="checkbox"]:checked', card).map(function (c) { return c.value; });
+      } else if (kind === 'text') {
+        state.texts[key] = qs('textarea[data-answer]', card).value;
+      }
+    });
+    qsa('textarea[data-notes]').forEach(function (t) { state.notes[t.getAttribute('data-notes')] = t.value; });
+    qsa('input[data-undo]').forEach(function (c) { state.undo[c.getAttribute('data-undo')] = c.checked; });
+    state.general = qs('#general-notes').value;
+  }
+
+  function apply() {
+    qsa('[data-item]').forEach(function (card) {
+      var key = card.getAttribute('data-item'), kind = card.getAttribute('data-kind');
+      if (kind === 'radio') {
+        qsa('input[type="radio"]', card).forEach(function (r) { r.checked = (r.value === state.radios[key]); });
+      } else if (kind === 'check') {
+        var list = Array.isArray(state.checks[key]) ? state.checks[key] : [];
+        qsa('input[type="checkbox"]', card).forEach(function (c) { c.checked = list.indexOf(c.value) !== -1; });
+      } else if (kind === 'text') {
+        qs('textarea[data-answer]', card).value = str(state.texts[key]);
+      }
+    });
+    qsa('textarea[data-notes]').forEach(function (t) { t.value = str(state.notes[t.getAttribute('data-notes')]); });
+    qsa('input[data-undo]').forEach(function (c) { c.checked = state.undo[c.getAttribute('data-undo')] === true; });
+    qs('#general-notes').value = str(state.general);
+  }
+
+  function load() {
+    try {
+      var raw = window.localStorage.getItem(KEY);
+      if (!raw) { return false; }
+      var s = JSON.parse(raw);
+      if (!s || typeof s !== 'object') { return false; }
+      state.radios = obj(s.radios); state.checks = obj(s.checks); state.texts = obj(s.texts);
+      state.notes = obj(s.notes); state.undo = obj(s.undo); state.general = str(s.general);
+      state.savedAt = str(s.savedAt); state.submittedAt = str(s.submittedAt);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  var UNSAVED = 'Drafts could not be saved in this browser (a private window or blocked storage). Your answers stay on this page until you close it. Use Export my answers before you leave.';
+
+  function persist() {
+    collect();
+    state.savedAt = new Date().toISOString();
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify(state));
+      saveLine.textContent = 'Draft saved in this browser at ' + clock() + '. A private window may not keep drafts.';
+    } catch (e) {
+      saveLine.textContent = UNSAVED;
+    }
+    saveRemote(state);
+    refresh();
+  }
+
+  function labelOf(input) { return input.getAttribute('data-label') || input.value; }
+
+  function answerOf(card) {
+    var kind = card.getAttribute('data-kind');
+    if (kind === 'radio') {
+      var r = qs('input[type="radio"]:checked', card);
+      if (!r) { return { answered: false, later: false, text: 'no answer' }; }
+      if (r.value === 'more' || r.value === 'later') { return { answered: false, later: r.value === 'later', text: labelOf(r) }; }
+      return { answered: true, later: false, text: labelOf(r) };
+    }
+    if (kind === 'check') {
+      var picked = qsa('input[type="checkbox"]:checked', card).map(labelOf);
+      return { answered: picked.length > 0, later: false, text: picked.length ? picked.join('; ') : 'no answer' };
+    }
+    var v = qs('textarea[data-answer]', card).value.trim();
+    return { answered: v.length > 0, later: false, text: v.length ? v : 'no answer' };
+  }
+
+  function refresh() {
+    var cards = qsa('[data-item]'), done = 0;
+    cards.forEach(function (card) {
+      var a = answerOf(card), st;
+      if (a.answered) { st = 'answered'; done++; }
+      else if (a.later) { st = 'later'; }
+      else if (card.getAttribute('data-reserved') === '1') { st = 'reserved'; }
+      else if (card.getAttribute('data-date')) { st = 'dated'; }
+      else { st = 'waiting'; }
+      var badge = qs('.badge', card);
+      badge.setAttribute('data-state', st);
+      qs('.sym', badge).textContent = STATES[st][0];
+      qs('.word', badge).textContent = STATES[st][1];
+    });
+    progress.textContent = 'Answered ' + done + ' of ' + cards.length + '. Choosing I need more information or Later does not count as answered.';
+  }
+
+  function quote(t) { return t.split('\n').map(function (l) { return '> ' + l; }).join('\n'); }
+  function field(name, text) { return text.indexOf('\n') !== -1 ? name + ':\n' + quote(text) : name + ': ' + text; }
+
+  function buildMarkdown() {
+    collect();
+    var cards = qsa('[data-item]'), answered = 0, left = [], sections = [];
+    cards.forEach(function (card) {
+      var a = answerOf(card), num = card.getAttribute('data-num'), key = card.getAttribute('data-item');
+      var title = qs('.qtitle', card).textContent.trim();
+      if (a.answered) { answered++; } else { left.push('Question ' + num); }
+      var sec = ['### Question ' + num + ': ' + title];
+      if (card.getAttribute('data-reserved') === '1') { sec.push('Reserved: yes, no default'); }
+      sec.push(field(card.getAttribute('data-kind') === 'text' ? 'Answer' : 'Choice', a.text));
+      if (card.getAttribute('data-kind') !== 'text') {
+        var n = str(state.notes[key]).trim();
+        sec.push(n ? field('Notes', n) : 'Notes: none');
+      }
+      sections.push(sec.join('\n'));
+    });
+    var out = ['## Answers for digest ' + DIGEST,
+      'Submitted: ' + (state.submittedAt || 'not yet'),
+      'Exported: ' + new Date().toISOString(),
+      'Answered: ' + answered + ' of ' + cards.length,
+      'Left unanswered: ' + (left.length ? left.join(', ') : 'none'),
+      ''];
+    out.push(sections.join('\n\n'));
+    var undo = qsa('input[data-undo]').filter(function (c) { return c.checked; }).map(labelOf);
+    out.push('', '### Undo requested', undo.length ? undo.map(function (u) { return '- ' + u; }).join('\n') : 'none');
+    var g = state.general.trim();
+    out.push('', '### General notes', g ? (g.indexOf('\n') !== -1 ? quote(g) : g) : 'none');
+    return out.join('\n');
+  }
+
+  function showFallback(text) {
+    fb.hidden = false;
+    fbBox.value = text;
+    try { fbBox.focus(); fbBox.select(); fbBox.setSelectionRange(0, text.length); } catch (e) { /* ignored */ }
+  }
+
+  function copyText(text, statusEl, okMsg, blocked) {
+    function fail() { fb.hidden = true; blocked(text); }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { fb.hidden = true; statusEl.textContent = okMsg; }, fail);
+      } else { fail(); }
+    } catch (e) { fail(); }
+  }
+
+  function bigBlocked(text) {
+    actionStatus.textContent = 'Copy was blocked here. The text is selected in the box below: press Ctrl or Cmd+C.';
+    showFallback(text);
+  }
+
+  qsa('button[data-tick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var card = qs('[data-item="' + b.getAttribute('data-target') + '"]');
+      var on = b.getAttribute('data-tick') === 'all';
+      var boxes = qsa('input[type="checkbox"]', card);
+      boxes.forEach(function (c) { c.checked = on; });
+      qs('#' + b.getAttribute('data-target') + '-status').textContent = on ? 'All ' + boxes.length + ' items ticked.' : 'All items unticked.';
+      persist();
+    });
+  });
+
+  qsa('button[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var pre = qs('#' + b.getAttribute('data-copy')), st = qs('#qw-status');
+      copyText(pre.textContent, st, 'Copied.', function () {
+        try { var rg = document.createRange(); rg.selectNodeContents(pre); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rg); } catch (e) { /* ignored */ }
+        st.textContent = 'Copy was blocked here. The text is selected: press Ctrl or Cmd+C.';
+      });
+    });
+  });
+
+  qs('#btn-submit').addEventListener('click', function () {
+    state.submittedAt = new Date().toISOString();
+    persist();
+    var text = MESSAGE + '\n\n' + buildMarkdown();
+    actionStatus.textContent = 'Saved. Copying the message and your answers...';
+    copyText(text, actionStatus, 'Saved, and the message with your answers is copied. Paste it into the Claude session.', bigBlocked);
+  });
+
+  qs('#btn-export').addEventListener('click', function () {
+    persist();
+    var text = buildMarkdown();
+    copyText(text, actionStatus, 'Your answers are copied as Markdown.', bigBlocked);
+  });
+
+  function onEdit(e) {
+    var t = e.target;
+    if (!t || t.id === 'fallback-box') { return; }
+    persist();
+  }
+  document.addEventListener('input', onEdit);
+  document.addEventListener('change', onEdit);
+
+  /* Start: probe storage, restore any draft, show the state. */
+  try {
+    window.localStorage.setItem(KEY + ':probe', '1');
+    window.localStorage.removeItem(KEY + ':probe');
+  } catch (e) { saveLine.textContent = UNSAVED; }
+  if (load()) {
+    apply();
+    var when = '';
+    try { when = new Date(state.savedAt).toLocaleString(); } catch (e) { when = ''; }
+    saveLine.textContent = 'Draft restored from this browser' + (when ? ', saved ' + when : '') + '. A private window may not keep drafts.';
+  }
+  refresh();
+})();
+</script>
+</body>
+</html>
